@@ -84,6 +84,7 @@ async function loadAllData() {
    await Promise.all([
      loadCollapsible('קודקודים', 'kodkodsPhones'),
      loadCollapsible('רבשצים', 'ravshatzim'),
+     loadCollapsible('חמלים איסוף', 'hamalIsuf'),
      loadCollapsible('חמלים ישובים', 'hamalYeshuvim'),
      loadCollapsible('חטיבה', 'hativa'),
      loadCollapsible('חמל גדוד+פלוגות', 'hamalGdod')
