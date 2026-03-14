@@ -36,7 +36,7 @@ body {
 }
 .collapsible {
   margin-bottom: 1rem;
-  max-height: 500px;
+  max-height: 2000px;
   overflow: hidden;
   transition: max-height 0.3s ease-in-out;
 }
