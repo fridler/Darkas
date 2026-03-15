@@ -109,3 +109,30 @@ body {
 th:hover {
   background-color: #e9ecef;
 }
+
+.phone-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.phone-number {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.phone-number:hover {
+  text-decoration: underline;
+}
+
+.whatsapp-icon {
+  color: #25d366;
+  font-size: 1.4rem;
+  transition: transform 0.2s;
+}
+
+.whatsapp-icon:hover {
+  transform: scale(1.15);
+  color: #128c7e;
+}
