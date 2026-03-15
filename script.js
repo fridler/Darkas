@@ -64,12 +64,13 @@ function createPhoneLink(phone) {
   // בודק אם זה מספר ישראלי נייד (מתחיל ב-05 ולאחר ניקוי 10 ספרות)
   const isMobile = /^05[0-9]{8}$/.test(cleanPhone);
 
-  let telLink = `<a href="tel:${cleanPhone}" class="phone-number">${phone}</a>`;
+  // קישור טלפון (אפשר להשתמש בפורמט בינלאומי גם פה אם רוצים)
+  const telLink = `<a href="tel:${cleanPhone}" class="phone-number">${phone}</a>`;
 
   if (isMobile) {
-    // קישור לוואטסאפ עם הודעה ברירת מחדל (אפשר לשנות את הטקסט)
-    const whatsappMsg = encodeURIComponent("שלום, אני מתקשר/ת מ..."); 
-    const whatsappLink = `https://wa.me/${cleanPhone}?text=${whatsappMsg}`;
+    // המרה לפורמט בינלאומי ללא סימן '+' (wa.me דורש ללא '+')
+    const intlWithoutPlus = '972' + cleanPhone.slice(1); // למשל 0506666666 -> 972506666666
+    const whatsappLink = `https://wa.me/${intlWithoutPlus}?text=${whatsappMsg}`;
 
     return `
       ${telLink}
