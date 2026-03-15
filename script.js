@@ -1,5 +1,5 @@
 
-const BASE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXTIinrxAP9eVk8Bh5sh-sk-841nAe_yL2xhpLsB0ZHa6MJJI-AsFe2ntZC2kU54NV/exec';
+const BASE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6s-5asWdDA0AWwg5lVcgAQh58zZ4O_swh1V9iG1aJ45pYQo4Mq733UkaQi9Zm_zBI/exec';
 
 async function loadCollapsible(type, listId) {
   const listElement = document.getElementById(listId);
