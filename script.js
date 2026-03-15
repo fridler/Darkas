@@ -70,7 +70,7 @@ function createPhoneLink(phone) {
   if (isMobile) {
     // המרה לפורמט בינלאומי ללא סימן '+' (wa.me דורש ללא '+')
     const intlWithoutPlus = '972' + cleanPhone.slice(1); // למשל 0506666666 -> 972506666666
-    const whatsappLink = `https://wa.me/${intlWithoutPlus}?text=${whatsappMsg}`;
+    const whatsappLink = `https://wa.me/${intlWithoutPlus}`;
 
     return `
       ${telLink}
