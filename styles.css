@@ -136,3 +136,34 @@ th:hover {
   transform: scale(1.15);
   color: #128c7e;
 }
+
+.phone-icon, .whatsapp-icon {
+  font-size: 1.5rem;          /* גודל נוח יותר */
+  margin: 0 8px;
+  text-decoration: none;
+  transition: transform 0.2s ease, color 0.2s ease;
+  vertical-align: middle;
+}
+
+.phone-icon.mobile {
+  color: #0d6efd;             /* כחול בהיר יותר – כמו Bootstrap primary */
+}
+
+.phone-icon.landline {
+  color: #6c757d;             /* אפור כהה – נייח/משרדי */
+}
+
+.whatsapp-icon {
+  color: #25d366;             /* ירוק וואטסאפ קלאסי */
+}
+
+.phone-icon:hover, .whatsapp-icon:hover {
+  transform: scale(1.3);
+  opacity: 0.85;
+}
+
+.phone-cell {
+  text-align: center;
+  min-width: 100px;           /* מונע כיווץ חזק מדי */
+  padding: 0.5rem !important; /* קצת יותר מרווח */
+}
