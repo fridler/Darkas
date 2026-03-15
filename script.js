@@ -115,7 +115,8 @@ async function loadAllData() {
      loadCollapsible('חמלים איסוף', 'hamalIsuf'),
      loadCollapsible('חמלים ישובים', 'hamalYeshuvim'),
      loadCollapsible('חטיבה', 'hativa'),
-     loadCollapsible('חמל גדוד+פלוגות', 'hamalGdod')
+     loadCollapsible('חמל גדוד+פלוגות', 'hamalGdod'),
+     loadCollapsible('בעלי תפקידים', 'baliTafkidimPhones'),
    ]);
  } catch (error) {
    console.error('שגיאה כללית ב-loadAllData:', error);
