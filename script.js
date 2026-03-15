@@ -2,57 +2,95 @@
 const BASE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXTIinrxAP9eVk8Bh5sh-sk-841nAe_yL2xhpLsB0ZHa6MJJI-AsFe2ntZC2kU54NV/exec';
 
 async function loadCollapsible(type, listId) {
- const listElement = document.getElementById(listId);
- if (!listElement) {
-   console.warn(`לא נמצא אלמנט עם ID: ${listId} עבור ${type}`);
-   return;
- }
+  const listElement = document.getElementById(listId);
+  if (!listElement) {
+    console.warn(`לא נמצא אלמנט עם ID: ${listId} עבור ${type}`);
+    return;
+  }
 
- const toggleButton = document.querySelector(`button[data-list="${listId}"]`);
- if (!toggleButton) {
-   console.warn(`לא נמצא כפתור toggle עבור ${listId}`);
-   return;
- }
+  const toggleButton = document.querySelector(`button[data-list="${listId}"]`);
+  if (!toggleButton) {
+    console.warn(`לא נמצא כפתור toggle עבור ${listId}`);
+    return;
+  }
 
- try {
-   const url = `${BASE_APPS_SCRIPT_URL}?type=${encodeURIComponent(type)}`;
-   const response = await fetch(url);
-   if (!response.ok) {
-     throw new Error(`HTTP ${response.status} עבור ${type}`);
-   }
-   const data = await response.json();
+  try {
+    const url = `${BASE_APPS_SCRIPT_URL}?type=${encodeURIComponent(type)}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} עבור ${type}`);
+    }
+    const data = await response.json();
 
-   if (!Array.isArray(data) || data.length === 0) {
-     toggleButton.classList.add('d-none');
-     listElement.innerHTML = '';
-     return;
-   }
+    if (!Array.isArray(data) || data.length === 0) {
+      toggleButton.classList.add('d-none');
+      listElement.innerHTML = '';
+      return;
+    }
 
-   toggleButton.classList.remove('d-none');
-   listElement.innerHTML = `
-     <table class="collapsible-table">
-       <thead>
-         <tr>
-           <th>שם</th>
-           <th>טלפון</th>
-         </tr>
-       </thead>
-       <tbody>
-         ${data.map(item => `
-           <tr>
-             <td>${item.name || ''}</td>
-             <td class="phone-cell">
-			  ${item.phone ? createPhoneLink(item.phone) : ''}
-			</td>
-           </tr>
-         `).join('')}
-       </tbody>
-     </table>
-   `;
- } catch (error) {
-   console.error(`שגיאה בטעינת ${type}:`, error);
-   document.getElementById('errorMessage').classList.remove('d-none');
- }
+    toggleButton.classList.remove('d-none');
+
+    // לוקחים את שמות העמודות מהאובייקט הראשון (שורה 1 בגליון)
+    const firstItem = data[0];
+    const headers = Object.keys(firstItem).filter(key => key.trim() !== ''); // מסננים ריקים
+
+    // בניית כותרות הטבלה
+    let thead = '<tr>';
+    headers.forEach(header => {
+      thead += `<th>${header}</th>`;
+    });
+    thead += '</tr>';
+
+    // בניית שורות הגוף
+    let tbody = '';
+    data.forEach(item => {
+      let row = '<tr>';
+      headers.forEach(header => {
+        const value = item[header] ?? '';
+        // טיפול מיוחד בעמודות שמכילות "טלפון" או "phone" בשם
+        if (header.toLowerCase().includes('טלפון') || header.toLowerCase().includes('phone')) {
+          const rawPhone = value.trim();
+          const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+          let telLink = '';
+          let whatsappLink = '';
+
+          if (cleanPhone) {
+            telLink = `<a href="tel:${cleanPhone}">${rawPhone}</a>`;
+
+            // אם מתחיל ב-05 (נייד) – מוסיפים וואטסאפ
+            if (cleanPhone.startsWith('05') && cleanPhone.length === 10) {
+              const waNumber = '972' + cleanPhone.substring(1);
+              whatsappLink = `
+                <a href="https://wa.me/${waNumber}" target="_blank" rel="noopener noreferrer" class="whatsapp-icon" title="שלח הודעה בוואטסאפ">
+                  <i class="fab fa-whatsapp"></i>
+                </a>
+              `;
+            }
+          }
+          row += `<td class="phone-cell">${telLink}${whatsappLink}</td>`;
+        } else {
+          // עמודות רגילות – טקסט בלבד
+          row += `<td>${value}</td>`;
+        }
+      });
+      row += '</tr>';
+      tbody += row;
+    });
+
+    listElement.innerHTML = `
+      <table class="collapsible-table">
+        <thead>
+          ${thead}
+        </thead>
+        <tbody>
+          ${tbody}
+        </tbody>
+      </table>
+    `;
+  } catch (error) {
+    console.error(`שגיאה בטעינת ${type}:`, error);
+    document.getElementById('errorMessage')?.classList.remove('d-none');
+  }
 }
 
 function createPhoneLink(phone) {
