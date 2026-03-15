@@ -42,8 +42,8 @@ async function loadCollapsible(type, listId) {
            <tr>
              <td>${item.name || ''}</td>
              <td class="phone-cell">
-               ${item.phone ? `<a href="tel:${(item.phone || '').replace(/[^0-9]/g, '')}">${item.phone}</a>` : ''}
-             </td>
+			  ${item.phone ? createPhoneLink(item.phone) : ''}
+			</td>
            </tr>
          `).join('')}
        </tbody>
@@ -55,6 +55,33 @@ async function loadCollapsible(type, listId) {
  }
 }
 
+function createPhoneLink(phone) {
+  if (!phone) return '';
+
+  // מנקה את המספר מכל תווים לא ספרתיים
+  const cleanPhone = phone.replace(/[^0-9]/g, '');
+
+  // בודק אם זה מספר ישראלי נייד (מתחיל ב-05 ולאחר ניקוי 10 ספרות)
+  const isMobile = /^05[0-9]{8}$/.test(cleanPhone);
+
+  let telLink = `<a href="tel:${cleanPhone}" class="phone-number">${phone}</a>`;
+
+  if (isMobile) {
+    // קישור לוואטסאפ עם הודעה ברירת מחדל (אפשר לשנות את הטקסט)
+    const whatsappMsg = encodeURIComponent("שלום, אני מתקשר/ת מ..."); 
+    const whatsappLink = `https://wa.me/${cleanPhone}?text=${whatsappMsg}`;
+
+    return `
+      ${telLink}
+      <a href="${whatsappLink}" target="_blank" rel="noopener noreferrer" class="whatsapp-icon" title="שלח הודעה בוואטסאפ">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+    `;
+  }
+
+  // אם לא נייד — רק קישור טלפון רגיל
+  return telLink;
+}
 
 function toggleCollapsible(button) {
  const listId = button.getAttribute('data-list');
