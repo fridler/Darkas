@@ -167,3 +167,28 @@ th:hover {
   min-width: 100px;           /* מונע כיווץ חזק מדי */
   padding: 0.5rem !important; /* קצת יותר מרווח */
 }
+
+.toggle-phone {
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.toggle-phone:hover {
+  color: #0d6efd;
+}
+
+.toggle-phone i {
+  pointer-events: none; /* שהאייקון עצמו לא יפריע ללחיצה */
+}
+
+.phone-number {
+  text-decoration: none;
+  color: #0d6efd;
+  font-weight: 500;
+}
+
+.phone-number:hover {
+  text-decoration: underline;
+}
