@@ -15,9 +15,7 @@ async function loadSheetNames() {
   }
 }
 
-// ────────────── פונקציה חדשה: מייצרת אייקונים במקום טקסט ──────────────
-// ────────────── פונקציה מעודכנת: אייקונים פשוטים יותר ──────────────
-function createPhoneIcons(value) {
+function createPhoneContent(value, showNumber = false) {
   if (!value) return '';
 
   const raw = value.toString().trim();
@@ -29,35 +27,47 @@ function createPhoneIcons(value) {
     return `<span class="text-muted">—</span>`;
   }
 
-  // בודק אם נראה כמו נייד ישראלי (מתחיל ב-05 + 10 ספרות)
   const isMobile = clean.length === 10 && clean.startsWith('05');
 
-  let icons = '';
-
-  if (isMobile) {
-    // נייד → אייקון נייד + וואטסאפ
-    const waNumber = '972' + clean.substring(1);
-    const waLink = `https://wa.me/${waNumber}`;
-
-    icons = `
-      <a href="tel:${clean}" class="phone-icon mobile" title="${raw} (נייד – לחץ לחיוג)">
-        <i class="fas fa-mobile-screen"></i>
-      </a>
-      <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="whatsapp-icon" title="שלח הודעה בוואטסאפ ל-${raw}">
-        <i class="fab fa-whatsapp"></i>
-      </a>
-    `;
+  if (showNumber) {
+    // מצב הצגת מספר + וואטסאפ אם נייד
+    const telLink = `<a href="tel:${clean}" class="phone-number">${raw}</a>`;
+    if (isMobile) {
+      const waNumber = '972' + clean.substring(1);
+      const waLink = `https://wa.me/${waNumber}`;
+      return `
+        ${telLink}
+        <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="whatsapp-icon" title="שלח הודעה בוואטסאפ ל-${raw}">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      `;
+    }
+    return telLink;
   } else {
-    // נייח / אחר → אייקון טלפון פשוט
-    icons = `
-      <a href="tel:${clean}" class="phone-icon landline" title="${raw} (נייח – לחץ לחיוג)">
-        <i class="fas fa-phone"></i>
-      </a>
-    `;
+    // מצב אייקונים בלבד
+    let icons = '';
+    if (isMobile) {
+      const waNumber = '972' + clean.substring(1);
+      const waLink = `https://wa.me/${waNumber}`;
+      icons = `
+        <a href="tel:${clean}" class="phone-icon mobile" title="${raw} (נייד – לחץ לחיוג)">
+          <i class="fas fa-mobile-screen"></i>
+        </a>
+        <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="whatsapp-icon" title="שלח הודעה בוואטסאפ ל-${raw}">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      `;
+    } else {
+      icons = `
+        <a href="tel:${clean}" class="phone-icon landline" title="${raw} (נייח – לחץ לחיוג)">
+          <i class="fas fa-phone"></i>
+        </a>
+      `;
+    }
+    return icons;
   }
-
-  return icons;
 }
+
 async function loadAndBuildAllLists() {
   const loading = document.getElementById('loadingOverlay');
   if (loading) loading.classList.add('active');
@@ -123,15 +133,38 @@ async function loadAndBuildAllLists() {
 
       const headers = Object.keys(data[0]).filter(h => h.trim() !== '');
 
-      let thead = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+      // מצא את אינדקס עמודת "טלפון" אם קיימת
+      const phoneColumnIndex = headers.findIndex(h => h.trim() === 'טלפון');
+      const hasPhoneColumn = phoneColumnIndex !== -1;
+
+      let thead = '<tr>';
+      headers.forEach((header, idx) => {
+        let thContent = header;
+        if (idx === phoneColumnIndex) {
+          thContent += `
+            <span class="toggle-phone ms-2" data-state="hidden" title="לחץ להצגת/הסתרת מספרים">
+              <i class="fas fa-eye-slash"></i>
+            </span>
+          `;
+        }
+        thead += `<th>${thContent}</th>`;
+      });
+      thead += '</tr>';
 
       let tbody = '';
       data.forEach(row => {
         let tr = '<tr>';
-        headers.forEach(header => {
+        headers.forEach((header, idx) => {
           const val = row[header] ?? '';
-          const isPhoneColumn = /טלפון|phone|נייד|פקס/i.test(header);
-          const content = isPhoneColumn ? createPhoneIcons(val) : (val || '');
+          let content = val;
+
+          if (idx === phoneColumnIndex) {
+            // השתמש במצב ברירת מחדל: hidden (אייקונים)
+            content = createPhoneContent(val, false);
+          } else {
+            content = val || '';
+          }
+
           tr += `<td>${content}</td>`;
         });
         tr += '</tr>';
@@ -139,11 +172,42 @@ async function loadAndBuildAllLists() {
       });
 
       targetDiv.innerHTML = `
-        <table class="collapsible-table">
+        <table class="collapsible-table" data-phone-col="${phoneColumnIndex}">
           <thead>${thead}</thead>
           <tbody>${tbody}</tbody>
         </table>
       `;
+
+      // אם יש עמודה טלפון – הוסף מאזין לכפתור toggle
+      if (hasPhoneColumn) {
+        const toggleBtn = targetDiv.querySelector('.toggle-phone');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // שלא יסגור/יפתח את הקולפסיבל
+            const state = toggleBtn.dataset.state;
+            const newState = state === 'hidden' ? 'visible' : 'hidden';
+            toggleBtn.dataset.state = newState;
+
+            // שנה אייקון
+            toggleBtn.innerHTML = newState === 'visible' 
+              ? '<i class="fas fa-eye"></i>' 
+              : '<i class="fas fa-eye-slash"></i>';
+
+            // עדכן כל התאים בעמודה
+            const table = targetDiv.querySelector('table');
+            const colIndex = parseInt(table.dataset.phoneCol);
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+              const cell = row.children[colIndex];
+              if (cell) {
+                const originalValue = data[rowsIndex = Array.from(rows).indexOf(row)][headers[colIndex]] || '';
+                cell.innerHTML = createPhoneContent(originalValue, newState === 'visible');
+              }
+            });
+          });
+        }
+      }
+
     } catch (err) {
       console.error(`שגיאה בטעינת ${name}:`, err);
       targetDiv.innerHTML = '<p class="text-danger">שגיאה בטעינת הנתונים</p>';
